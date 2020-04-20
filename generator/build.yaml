@@ -1,0 +1,9 @@
+builders:
+  dartstruct:
+    target: ":dartstruct_generator"
+    import: "package:dartstruct_generator/generator.dart"
+    builder_factories: ["dartstructBuilder"]
+    build_extensions: {".dart": [".mapper.g.part"]}
+    auto_apply: dependents
+    build_to: cache
+    applies_builders: ["source_gen|combining_builder"]
