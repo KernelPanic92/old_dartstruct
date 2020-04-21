@@ -23,7 +23,7 @@ To create a mapping between two types, declare a mapper class like this:
 @Mapper()
 abstract class CarMapper {
 
-    static final CarMapper INSTANCE = CarMapperImpl();
+    static CarMapper get INSTANCE => CarMapperImpl();
 
     CarDto carToCarDto(Car car);
 
