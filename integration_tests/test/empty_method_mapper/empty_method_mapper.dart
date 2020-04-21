@@ -10,6 +10,7 @@ class Model {
 class Dto {
   String field;
 }
+
 @Mapper()
 abstract class EmptyMethodMapper {
 

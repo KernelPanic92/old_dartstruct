@@ -10,7 +10,8 @@ void main() {
     });
 
     test('Should return null', () {
-      expect(EmptyMethodMapper.INSTANCE, isNotNull);
+      final model = Model()..field = 'test';
+      expect(EmptyMethodMapper.INSTANCE.modelToDto(model), isNotNull);
     });
 
   });
