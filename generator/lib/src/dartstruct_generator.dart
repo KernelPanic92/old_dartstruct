@@ -6,6 +6,8 @@ import 'package:dartstruct_generator/src/name_provider.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:dartstruct/dartstruct.dart';
 import './extensions/extensions.dart';
+import 'models/input_source.dart';
+import 'models/output_source.dart';
 
 class DartStructGenerator extends GeneratorForAnnotation<Mapper> {
   final _emitter = DartEmitter();
@@ -131,17 +133,59 @@ class DartStructGenerator extends GeneratorForAnnotation<Mapper> {
 
   Code _generateMethodBody(MethodElement methodElement, NameProvider nameProvider) {
 
-    print(nameProvider);
+    final firstParameter = methodElement.parameters.first;
 
-    final targetType = methodElement.returnType;
+    final inputSource = InputSource(firstParameter.type, firstParameter.displayName);
 
-    final targetName = nameProvider.provideVariableName(targetType);
+    final outputSource = OutputSource(methodElement.returnType, nameProvider.provideVariableName(methodElement.returnType));
 
-    return Block((builder) {
-      builder
-        ..addExpression(refer(targetType.element.displayName).newInstance([]).assignFinal(targetName))
-        ..addExpression(refer(targetName).returned);
-    });
+    final setters = (outputSource.type.element as ClassElement).fields.where((field) => field.setter != null);
+
+    final blockBuilder = BlockBuilder()..addExpression(_instantiateOutputOrNull(inputSource, outputSource));
+
+    for (final setter in setters) {
+
+      final mapperExpression = _getMapperExpression(setter, inputSource);
+
+      if (mapperExpression != null) {
+        final assignmentExpression = refer(outputSource.name).nullSafeProperty(setter.displayName).assign(mapperExpression);
+        blockBuilder.addExpression(assignmentExpression);
+      }
+
+    }
+
+    blockBuilder.addExpression(refer(outputSource.name).returned);
+
+    return blockBuilder.build();
+
+  }
+
+  Expression _getMapperExpression(FieldElement outputField, InputSource inputSource) {
+
+    final classElement = inputSource.type.element as ClassElement;
+    final fieldName = outputField.displayName;
+
+    final inputFieldElement = classElement.fields.firstWhere((field) => field.displayName == fieldName && field.getter != null, orElse: () => null);
+
+
+    if (inputFieldElement?.type == outputField.type) {
+      return refer(inputSource.name).nullSafeProperty(fieldName);
+    }
+
+    return null;
+
+  }
+
+  /// generate expression `final {output} = {input} == null ? null : new {output}()`
+  Expression _instantiateOutputOrNull(InputSource input, OutputSource output) {
+
+    final nullValue = refer('null');
+    final inputValue = refer(input.name);
+    final newInstanceExpression = refer(output.type.element.displayName).newInstance([]);
+
+    return inputValue
+          .equalTo(nullValue)
+          .conditional(nullValue, newInstanceExpression).assignFinal(output.name);
   }
 
 }
