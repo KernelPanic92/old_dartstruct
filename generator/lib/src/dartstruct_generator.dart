@@ -3,6 +3,7 @@ import 'package:build/src/builder/build_step.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:dartstruct_generator/src/name_provider.dart';
+import 'package:logging/logging.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:dartstruct/dartstruct.dart';
 import './extensions/extensions.dart';
@@ -12,6 +13,7 @@ import 'models/output_source.dart';
 class DartStructGenerator extends GeneratorForAnnotation<Mapper> {
   final _emitter = DartEmitter();
   final _formatter = DartFormatter();
+  final _logger = Logger('dartstruct');
 
   @override
   String generateForAnnotatedElement(Element element, ConstantReader annotation, BuildStep buildStep) {
@@ -148,8 +150,18 @@ class DartStructGenerator extends GeneratorForAnnotation<Mapper> {
       final mapperExpression = _getMapperExpression(setter, inputSource);
 
       if (mapperExpression != null) {
+
         final assignmentExpression = refer(outputSource.name).nullSafeProperty(setter.displayName).assign(mapperExpression);
         blockBuilder.addExpression(assignmentExpression);
+
+      } else {
+
+        final unmappedFieldMessage = InvalidGenerationSourceError('unmapped field \'${setter.displayName}\'',
+          element: setter
+        );
+
+        _logger.warning(unmappedFieldMessage.toString());
+
       }
 
     }
@@ -169,10 +181,11 @@ class DartStructGenerator extends GeneratorForAnnotation<Mapper> {
 
 
     if (inputFieldElement?.type == outputField.type) {
-      return refer(inputSource.name).nullSafeProperty(fieldName);
+       return refer(inputSource.name).nullSafeProperty(fieldName);
     }
 
     return null;
+
 
   }
 
