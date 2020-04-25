@@ -19,10 +19,11 @@ extension DartTypeExtension on DartType {
 
   bool get hasEmptyConstructor {
 
-    if (element is ClassElement) {
-      final classElement = element as ClassElement;
+    final element = this.element;
 
-      for (final constructor in classElement.constructors) {
+    if (element is ClassElement) {
+
+      for (final constructor in element.constructors) {
 
         final hasRequiredParameter = constructor.parameters.any(_isRequiredParameter);
 
@@ -31,6 +32,7 @@ extension DartTypeExtension on DartType {
         }
 
       }
+
     }
 
     return false;
@@ -39,5 +41,29 @@ extension DartTypeExtension on DartType {
 
   bool _isRequiredParameter(ParameterElement parameterElement) {
      return parameterElement.isRequiredNamed || parameterElement.isRequiredPositional || parameterElement.hasRequired;
+  }
+
+  List<PropertyAccessorElement> get getters {
+
+    final element = this.element;
+
+    if (element is ClassElement) {
+      return element.accessors.where((accessor) => accessor.isGetter).toList();
+    }
+
+    return <PropertyAccessorElement>[];
+
+  }
+
+  List<PropertyAccessorElement> get setters {
+
+    final element = this.element;
+
+    if (element is ClassElement) {
+      return element.accessors.where((accessor) => accessor.isSetter).toList();
+    }
+
+    return <PropertyAccessorElement>[];
+
   }
 }
