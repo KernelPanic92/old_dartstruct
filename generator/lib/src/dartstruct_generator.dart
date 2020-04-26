@@ -1,4 +1,6 @@
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type_system.dart';
+import 'package:build/build.dart';
 import 'package:build/src/builder/build_step.dart';
 import 'package:code_builder/code_builder.dart';
 import 'package:dart_style/dart_style.dart';
@@ -6,17 +8,25 @@ import 'package:dartstruct_generator/src/name_provider.dart';
 import 'package:logging/logging.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:dartstruct/dartstruct.dart';
-import './extensions/extensions.dart';
+import 'extensions/extensions.dart';
+import 'mappers/conversions/conversions.dart';
 import 'models/input_source.dart';
 import 'models/output_source.dart';
+import 'mappers/mappers.dart';
+import 'dart:core';
 
 class DartStructGenerator extends GeneratorForAnnotation<Mapper> {
   final _emitter = DartEmitter();
   final _formatter = DartFormatter();
   final _logger = Logger('dartstruct');
+  Conversions _conversions;
 
   @override
-  String generateForAnnotatedElement(Element element, ConstantReader annotation, BuildStep buildStep) {
+  Future<String> generateForAnnotatedElement(Element element, ConstantReader annotation, BuildStep buildStep) async {
+
+    final dartCoreLibrary = await buildStep.resolver.findLibraryByName('dart.core');
+
+    _conversions = Conversions(dartCoreLibrary);
 
     if (element is! ClassElement) {
       throw InvalidGenerationSourceError('${element.displayName} cannot be annotated with @Mapper',
@@ -174,18 +184,19 @@ class DartStructGenerator extends GeneratorForAnnotation<Mapper> {
 
   Expression _getMapperExpression(FieldElement outputField, InputSource inputSource) {
 
-    final classElement = inputSource.type.element as ClassElement;
-    final fieldName = outputField.displayName;
+    MapperAdapter mapper = FieldMapperAdapter.create(inputSource, outputField.displayName);
 
-    final inputFieldElement = classElement.fields.firstWhere((field) => field.displayName == fieldName && field.getter != null, orElse: () => null);
-
-
-    if (inputFieldElement?.type == outputField.type) {
-       return refer(inputSource.name).nullSafeProperty(fieldName);
+    if (mapper == null) {
+      return null;
     }
 
-    return null;
 
+    if (mapper.returnType != outputField.type && _conversions.canConvert(mapper.returnType, outputField.type)) {
+      mapper = _conversions.convert(mapper.returnType, outputField.type, mapper);
+      return mapper.expression;
+    }
+
+    return mapper.expression;
 
   }
 
