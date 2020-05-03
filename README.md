@@ -1,6 +1,8 @@
 # dartstruct
 An annotation processor inspired by mapstruct for generating type-safe mappers
 
+![Dart CI](https://github.com/KernelPanic92/dartstruct/workflows/Dart%20CI/badge.svg)
+
 ## What is dartstruct?
 
 dartstruct is a Dart annotation processor, inspired by Java MapStruct, for the generation of type-safe and performant mappers for dart classes. It saves you from writing mapping code by hand, which is a tedious and error-prone task.
