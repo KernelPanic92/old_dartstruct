@@ -32,7 +32,7 @@ void main() {
     });
 
     test('Should not assign field when input has different type', () {
-      final model = DifferentFieldTypeModel()..field = 4;
+      final model = DifferentFieldTypeModel()..field = DifferentModel();
       final mappedResult = SimpleMapper.INSTANCE.differentFieldTypeModelToDto(model);
       expect(mappedResult.field, isNull);
     });
