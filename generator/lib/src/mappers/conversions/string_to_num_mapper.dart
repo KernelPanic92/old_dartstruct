@@ -16,24 +16,32 @@ class StringToNumMapper implements MapperAdapter {
     final mapperExpression = _mapper.expression;
 
     if (_numType.isDartCoreInt) {
-      return _parseExpression(mapperExpression, 'int');
+      return _nullableParseExpression(mapperExpression, 'int');
     }
 
     if (_numType.isDartCoreDouble) {
-      return _parseExpression(mapperExpression, 'double');
+      return _nullableParseExpression(mapperExpression, 'double');
     }
 
     if (_numType.isDartCoreNum) {
-      return _parseExpression(mapperExpression, 'num');
+      return _nullableParseExpression(mapperExpression, 'num');
     }
 
     return _mapper.expression;
 
   }
 
-  Expression _parseExpression(Expression variable, String parseTo) {
+  Expression _nullableParseExpression(Expression variable, String parseTo) {
+
     final nullValue = refer('null');
-    return variable.equalTo(nullValue).conditional(nullValue, refer(parseTo).property('parse').call([variable]));
+    return variable.equalTo(nullValue).conditional(nullValue, _parseExpression(variable, parseTo));
+
+  }
+
+  Expression _parseExpression(Expression variable, String parseTo) {
+
+    return refer(parseTo).property('parse').call([variable]);
+
   }
 
   @override

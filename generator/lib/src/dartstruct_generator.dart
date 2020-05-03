@@ -1,5 +1,4 @@
 import 'package:analyzer/dart/element/element.dart';
-import 'package:analyzer/dart/element/type_system.dart';
 import 'package:build/build.dart';
 import 'package:build/src/builder/build_step.dart';
 import 'package:code_builder/code_builder.dart';
@@ -191,9 +190,13 @@ class DartStructGenerator extends GeneratorForAnnotation<Mapper> {
     }
 
 
-    if (mapper.returnType != outputField.type && _conversions.canConvert(mapper.returnType, outputField.type)) {
+    if (_conversions.canConvert(mapper.returnType, outputField.type)) {
       mapper = _conversions.convert(mapper.returnType, outputField.type, mapper);
       return mapper.expression;
+    }
+
+    if (mapper.returnType != outputField.type) {
+      return null;
     }
 
     return mapper.expression;

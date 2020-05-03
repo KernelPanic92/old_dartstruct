@@ -12,7 +12,7 @@ class DifferentModel {
 }
 
 class DifferentFieldTypeModel {
-  int field;
+  DifferentModel field;
 }
 
 class Dto {
