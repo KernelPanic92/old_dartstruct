@@ -1,0 +1,27 @@
+name: Dart CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    container:
+      image:  google/dart:latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install dependencies
+      run: pub get
+      working-directory: './integration_tests'
+    - name: Generate mappers
+      run: pub run build_runner build
+      working-directory: './integration_tests'
+    - name: Run tests
+      run: pub run test
+      working-directory: './integration_tests'
