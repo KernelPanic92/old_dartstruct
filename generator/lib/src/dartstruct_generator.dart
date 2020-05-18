@@ -152,7 +152,9 @@ class DartStructGenerator extends GeneratorForAnnotation<Mapper> {
 
     final setters = (outputSource.type.element as ClassElement).fields.where((field) => field.setter != null);
 
-    final blockBuilder = BlockBuilder()..addExpression(_instantiateOutputOrNull(inputSource, outputSource));
+    final blockBuilder = BlockBuilder()
+      ..addExpression(CodeExpression(Code('if (${inputSource.name} == null) return null')))
+      ..addExpression(refer(outputSource.type.element.displayName).newInstance([]).assignFinal(outputSource.name));
 
     for (final setter in setters) {
 
@@ -160,7 +162,7 @@ class DartStructGenerator extends GeneratorForAnnotation<Mapper> {
 
       if (mapperExpression != null) {
 
-        final assignmentExpression = refer(outputSource.name).nullSafeProperty(setter.displayName).assign(mapperExpression);
+        final assignmentExpression = refer(outputSource.name).property(setter.displayName).assign(mapperExpression);
         blockBuilder.addExpression(assignmentExpression);
 
       } else {
@@ -201,18 +203,6 @@ class DartStructGenerator extends GeneratorForAnnotation<Mapper> {
 
     return mapper.expression;
 
-  }
-
-  /// generate expression `final {output} = {input} == null ? null : new {output}()`
-  Expression _instantiateOutputOrNull(InputSource input, OutputSource output) {
-
-    final nullValue = refer('null');
-    final inputValue = refer(input.name);
-    final newInstanceExpression = refer(output.type.element.displayName).newInstance([]);
-
-    return inputValue
-          .equalTo(nullValue)
-          .conditional(nullValue, newInstanceExpression).assignFinal(output.name);
   }
 
 }

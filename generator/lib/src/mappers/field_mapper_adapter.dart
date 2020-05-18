@@ -12,7 +12,7 @@ class FieldMapperAdapter implements MapperAdapter {
   FieldMapperAdapter(this._mapper, this._fieldElement);
 
   @override
-  Expression get expression => _mapper.expression.nullSafeProperty(_fieldElement.displayName);
+  Expression get expression => _mapper.expression.property(_fieldElement.displayName);
 
   @override
   DartType get returnType => _fieldElement.type;
