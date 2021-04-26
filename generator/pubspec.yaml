@@ -13,7 +13,7 @@ dependencies:
   analyzer: ^0.39.5
   recase: ^3.0.0
   logging: ^0.11.4
-  equatable: ^1.1.1
+  equatable: ^2.0.0
   dartstruct:
     path: ../core
 
