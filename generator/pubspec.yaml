@@ -3,7 +3,7 @@ description: dartstruct generator is an annotation processor generator using sou
 version: 0.0.0
 
 environment:
-  sdk: '>=2.7.0 <3.0.0'
+  sdk: '<4.0.0'
 
 dependencies:
   build: ^1.2.2
